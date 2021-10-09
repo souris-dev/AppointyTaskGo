@@ -38,9 +38,9 @@ export APPYINST_PORT=<on which port to run the server>
 
 ### Windows (Powershell)
 ```ps
-$Env:MONGODB_URI = "<your connection string>"
-$Env:MONGODB_DBNAME = "<your database name>"
-$Env:APPYINSTA_PORT = "<your connection string>"
+$Env:MONGODB_URI = "<...>"
+$Env:MONGODB_DBNAME = "<...>"
+$Env:APPYINSTA_PORT = "<port>"
 ```
 
 You can also set these environment variables using other methods.
@@ -65,6 +65,165 @@ The server will now run on the specified port (as specified in the `APPYINSTA_PO
 A simple overview of the API is as follows. The API has been designed and created as per the requirements specified in the task.
 
 
-| Route | Method | Description | Request Body (sample) | Response Body |
-| ------ | ------ | ------ | ------ | ------ |
+<table>
+  <tr>
+    <th>Route</th>
+    <th>Method</th>
+    <th>Description</th>
+    <th>Request Body (Sample)</th>
+    <th>Response Body</th>
+  </tr>
+  
+  <tr>
+    <td>/users</td>
+    <td>POST</td>
+    <td>Create a user</td>
+    <td>
+      <pre>
+json
+{
+  "name": "(name)",
+  "email": "(email)",
+  "password": "(password)"
+}
+      </pre>
+      The password is hashed again at the server. All fields are compulsory. <br/>
+    </td>
+    <td>
+    <pre>
+json
+{
+  "id": "(user ID)"
+}
+    </pre>
+      The user ID (MongoDB object ID) of the new user is returned after user creation.
+    </td>
+  </tr>
+  <tr>
+    <td>/users/&lt;userID&gt;</td>
+    <td>GET</td>
+    <td>Retrieve information about a user</td>
+    <td>N/A</td>
+    <td><pre>
+json
+{
+  "id": "(user ID)",
+  "name": "(name)",
+  "email": "(email)",
+}
+      </pre>
+      The <i>id</i> field has the same user ID as specified in the URL.
+    </td>
+  </tr>
+  <tr>
+    <td>/posts</td>
+    <td>POST</td>
+    <td>Create a post</td>
+    <td>
+    <pre>
+json
+{
+    "posted_by": "(user ID )",
+    "caption": "(caption)",
+    "img_url": "(image URL)"
+}
+    </pre>
+      The <i>posted_by</i> field contains the user ID of the user who created this post.
+      While post creation, the timestamp of its creation is recorded at the server.
+    </td>
+    <td>
+    <pre>
+json
+{
+  "id": "(post ID)"
+}
+    </pre>
+      The post ID (MongoDB object ID) of the new post is returned after post creation.
+    </td>
+  </tr>
+  <tr>
+    <td>/posts/&lt;postID&gt;</td>
+    <td>GET</td>
+    <td>Retrieve information about a post</td>
+    <td>N/A</td>
+    <td>
+    <pre>
+json
+{
+  "id": "(post ID)",
+  "posted_by": "(user ID)",
+  "caption": "(caption)",
+  "img_url": "(image URL)",
+  "posted_on": "(timestamp)"
+}
+    </pre>
+      The <i>id</i> field has the same post ID as specified in the URL.
+    </td>
+  </tr>
+  <tr>
+    <td>/posts/users/&lt;userID&gt;</td>
+    <td>GET</td>
+    <td>Retrieve the posts created by the user, latest first.</td>
+    <td>
+      <b>First Request</b><br /><br />
+      For the first request, the <i>first_request</i> must be set to true. <br />
+      The <i>last_id</i> field can be set as the userID (or any post ID). <br />
+      The <i>last_posted_on</i> should be any string of a valid timestamp format (for example: 
+      2021-10-09T12:17:11.478Z). <br />
+      The request body format for the first request is as follows:
+      <pre>
+json
+{
+  "last_id": "(user ID)",
+  "last_posted_on": "(timestamp)",
+  "n_new": 3,
+  "first_request": true
+}
+    </pre>
+      The <i>n_new</i> field sets how many posts should be retrieved.
+      <br /><br />
+      <b>Subsequent Requests</b><br /><br />
+       For the subsequent requests, the request format is similar.<br />
+       The <i>last_id</i> field should have the post ID of the last post <br />
+       of the previous response. <br />
+       The <i>last_posted_on</i> field should have the posted_on timestamp of <br />
+       the last post of the previous response. <br />
+       The <i>first_request</i> field must be set to false, or can be omitted.
+    </td>
+    <td>
+     <pre>
+json
+[
+    {
+        "id": "(post ID)",
+        "posted_by": "(user ID)",
+        "caption": "(caption)",
+        "img_url": "(image URL)",
+        "posted_on": "(timestamp)"
+    },
+    ...
+    {
+        "id": "(post ID)",
+        "posted_by": "(user ID)",
+        "caption": "(caption)",
+        "img_url": "(image URL)",
+        "posted_on": "(timestamp)"
+    }
+]
+    </pre>
+      This array will contain maximum <i>n_new</i> number of posts (as specified in the request body).
+      The posts are returned in the most recent first order.
+    </td>
+  </tr>
+    
+</table>
 
+
+
+## Licence
+
+Will be added soon.
+
+
+
+2021, Souris Ash
