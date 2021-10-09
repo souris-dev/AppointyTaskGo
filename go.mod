@@ -1,4 +1,4 @@
-module appointyGo
+module appyinsta
 
 go 1.17
 

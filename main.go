@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"appointyGo/api/handlers"
-	"appointyGo/api/utils"
+	"appyinsta/api/handlers"
+	"appyinsta/api/utils"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

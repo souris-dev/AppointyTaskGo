@@ -12,7 +12,7 @@ import (
 )
 
 func TestGetPost(t *testing.T) {
-	req := httptest.NewRequest("GET", "/posts/6160fe9757a258c6bdc94056", nil)
+	req := httptest.NewRequest("GET", "/posts/6161578d7ca34c010e0f21d8", nil)
 	w := httptest.NewRecorder()
 
 	senv, client := openDBCon()
@@ -23,7 +23,7 @@ func TestGetPost(t *testing.T) {
 		}
 	}()
 
-	senv.HandleUserGet(w, req)
+	senv.HandlePostGet(w, req)
 
 	resp := w.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -63,7 +63,7 @@ func TestCreatePost(t *testing.T) {
 		t.Errorf("Handler returned wrong status code: expected %v but received %v.", http.StatusOK, resp.StatusCode)
 	}
 
-	if strings.Contains(string(body), "id") {
-		t.Errorf("Body does not contain the ID of inserted object.")
+	if !strings.Contains(string(body), "id") {
+		t.Errorf("Body does not contain the ID of inserted object. Body received: %s", string(body))
 	}
 }

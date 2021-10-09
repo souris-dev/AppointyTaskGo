@@ -63,7 +63,7 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("Handler returned wrong status code: expected %v but received %v.", http.StatusOK, resp.StatusCode)
 	}
 
-	if strings.Contains(string(body), "id") {
-		t.Errorf("Body does not contain the ID of inserted object.")
+	if !strings.Contains(string(body), "id") {
+		t.Errorf("Body does not contain the ID of inserted object. Body received: %s", string(body))
 	}
 }

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"appointyGo/api/models"
-	"appointyGo/api/utils"
+	"appyinsta/api/models"
+	"appyinsta/api/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
