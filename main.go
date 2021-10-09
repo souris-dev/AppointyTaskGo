@@ -28,9 +28,9 @@ type ServerEnv struct {
 type User struct {
 	// JSON unmarshalling should skip this field
 	// UserID is an objectID provided by mongodb on insertion
-	UserID string `json:"id,omitempty" bson:"_id"`
-	Name   string `json:"name" bson:"name"`
-	Email  string `json:"email" bson:"email"`
+	UserID primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Name   string             `json:"name" bson:"name"`
+	Email  string             `json:"email" bson:"email"`
 
 	// The following field initially contains the original password just after
 	// JSON unmarshalling of the request body, after which it is hashed and updated for storage.
@@ -39,21 +39,12 @@ type User struct {
 	PwdHash string `json:"password,omitempty" bson:"p_hash"`
 }
 
-// This struct defines the form in which the User data is returned in
-// the GET endpoint. The password is not returned.
-
-type UserReturn struct {
-	UserID string `json:"id" bson:"_id"`
-	Name   string `json:"name" bson:"name"`
-	Email  string `json:"email" bson:"email"`
-}
-
 type Post struct {
-	PostID      string    `json:"id,omitempty" bson:"_id"`
-	PostedByUID string    `json:"posted_by" bson:"posted_by"`
-	Caption     string    `json:"caption" bson:"caption"`
-	ImgURL      string    `json:"img_url" bson:"img_url"`
-	PostedOn    time.Time `json:"posted_on,omitempty" bson:"posted_on"` // filled at the server
+	PostID      primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	PostedByUID primitive.ObjectID `json:"posted_by" bson:"posted_by"`
+	Caption     string             `json:"caption" bson:"caption"`
+	ImgURL      string             `json:"img_url" bson:"img_url"`
+	PostedOn    time.Time          `json:"posted_on,omitempty" bson:"posted_on"` // filled at the server
 }
 
 // utilities
@@ -92,8 +83,6 @@ func addCommonHeaders(w *http.ResponseWriter) {
 // handlers
 
 func (senv *ServerEnv) handleUserCreate(writer http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(writer, "Hello from handleUserCreate! Invoked at %s.", req.URL.Path[:])
-
 	var user User
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
@@ -101,8 +90,24 @@ func (senv *ServerEnv) handleUserCreate(writer http.ResponseWriter, req *http.Re
 		return
 	}
 
+	// hash the password of the user
+	user.PwdHash = getHashed256(user.PwdHash)
+
+	colln := senv.DB.Collection("users")
+	// ensure that the ID field is empty
+	user.UserID = primitive.NilObjectID
+	res, err := colln.InsertOne(context.TODO(), user)
+
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	user.UserID = res.InsertedID.(primitive.ObjectID)
+
 	addCommonHeaders(&writer)
-	fmt.Fprintf(writer, "Creating user: %v", user)
+	fmt.Fprintf(writer, "{\"id\": \"%s\"}", user.UserID.Hex())
 }
 
 func (senv *ServerEnv) handleUserGet(writer http.ResponseWriter, req *http.Request) {
@@ -152,8 +157,24 @@ func (senv *ServerEnv) handlePostCreate(writer http.ResponseWriter, req *http.Re
 		return
 	}
 
+	// set the PostedOn field of the post as per server time
+	post.PostedOn = time.Now().UTC()
+
+	colln := senv.DB.Collection("posts")
+	// ensure that the ID field is empty
+	post.PostID = primitive.NilObjectID
+	res, err := colln.InsertOne(context.TODO(), post)
+
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	post.PostID = res.InsertedID.(primitive.ObjectID)
+
 	addCommonHeaders(&writer)
-	fmt.Fprintf(writer, "Creating post: %v", post)
+	fmt.Fprintf(writer, "{\"id\": \"%s\"}", post.PostID.Hex())
 }
 
 func (senv *ServerEnv) handlePostGet(writer http.ResponseWriter, req *http.Request) {
