@@ -32,6 +32,9 @@ type Post struct {
 	PostedOn    time.Time          `json:"posted_on,omitempty" bson:"posted_on"` // filled at the server
 }
 
+// See api/handlers/handlers.go for the pagination logic.
+// This struct stores the information received from the client (frontend)
+// for implementing pagination.
 type PostPaginationInfo struct {
 	LastPostID       primitive.ObjectID `json:"last_id"`
 	LastPostedOn     time.Time          `json:"last_posted_on"`

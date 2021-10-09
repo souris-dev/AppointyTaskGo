@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"appointyGo/api"
+	"appointyGo/api/handlers"
 	"appointyGo/api/utils"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -41,7 +41,7 @@ func main() {
 	log.Println("Connected to MongoDB Atlas database.")
 	log.Println(fmt.Sprintf("Selecting database: %s", dbname))
 
-	senv := &api.ServerEnv{DB: client.Database(dbname)}
+	senv := &handlers.ServerEnv{DB: client.Database(dbname)}
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/users", utils.MakeCheckMethodHandler("POST", senv.HandleUserCreate))

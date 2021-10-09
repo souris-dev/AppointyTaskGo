@@ -1,4 +1,4 @@
-package api
+package handlers
 
 import (
 	"context"
@@ -18,18 +18,28 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// All handlers are defined on this struct so that the DB connection
+// can be accessed from all the handlers without making a global variable
+// This struct can also include other resources that need to be shared
+// by the handlers if needed, in the future
+
 type ServerEnv struct {
 	DB *mongo.Database
 }
 
-// handlers
+// Handlers
 
+// POST /users
 func (senv *ServerEnv) HandleUserCreate(writer http.ResponseWriter, req *http.Request) {
 	var user models.User
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	if user.Email == "" || user.PwdHash == "" || user.Name == "" {
+		http.Error(writer, "Bad Request", http.StatusBadRequest)
 	}
 
 	// hash the password of the user
@@ -52,6 +62,7 @@ func (senv *ServerEnv) HandleUserCreate(writer http.ResponseWriter, req *http.Re
 	fmt.Fprintf(writer, "{\"id\": \"%s\"}", user.UserID.Hex())
 }
 
+// GET /users/<userID>
 func (senv *ServerEnv) HandleUserGet(writer http.ResponseWriter, req *http.Request) {
 	urlParts := strings.Split(req.URL.Path[1:], "/") // omit the first '/' in the Path
 	userID := strings.Join(urlParts[1:], "")         // the first element would be 'users'
@@ -89,14 +100,17 @@ func (senv *ServerEnv) HandleUserGet(writer http.ResponseWriter, req *http.Reque
 	fmt.Fprintf(writer, string(jsonPost))
 }
 
+// POST /posts
 func (senv *ServerEnv) HandlePostCreate(writer http.ResponseWriter, req *http.Request) {
-	//fmt.Fprintf(writer, "Hello from handlePostCreate! Invoked at %s.", req.URL.Path[:])
-
 	var post models.Post
 
 	if err := json.NewDecoder(req.Body).Decode(&post); err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	if post.Caption == "" || post.ImgURL == "" || post.PostedByUID == primitive.NilObjectID {
+		http.Error(writer, "Bad Request", http.StatusBadRequest)
 	}
 
 	// set the PostedOn field of the post as per server time
@@ -119,6 +133,7 @@ func (senv *ServerEnv) HandlePostCreate(writer http.ResponseWriter, req *http.Re
 	fmt.Fprintf(writer, "{\"id\": \"%s\"}", post.PostID.Hex())
 }
 
+// GET /posts/<postID>
 func (senv *ServerEnv) HandlePostGet(writer http.ResponseWriter, req *http.Request) {
 	urlParts := strings.Split(req.URL.Path[1:], "/")
 	postID := strings.Join(urlParts[1:], "")
@@ -154,6 +169,15 @@ func (senv *ServerEnv) HandlePostGet(writer http.ResponseWriter, req *http.Reque
 	fmt.Fprintf(writer, string(jsonPost))
 }
 
+// GET /posts/users/<userId>
+// This endpoint implements pagination and sends the posts by a user
+// in the order of most recent first.
+// If in the body, the first_request param is true, then the first n
+// number of sorted posts are returned.
+// For subsequent requests, the first_request field is either not present or is false
+// and the client supplies the last postId and the timestamp that last post it received.
+// We query the database for posts that were posted earlier than this timestamp received.
+
 func (senv *ServerEnv) HandleUserPostsGet(writer http.ResponseWriter, req *http.Request) {
 	urlParts := strings.Split(req.URL.Path[1:], "/")
 	userID := strings.Join(urlParts[2:], "")
@@ -165,7 +189,7 @@ func (senv *ServerEnv) HandleUserPostsGet(writer http.ResponseWriter, req *http.
 		return
 	}
 
-	var pagInfo PostPaginationInfo
+	var pagInfo models.PostPaginationInfo
 
 	if err := json.NewDecoder(req.Body).Decode(&pagInfo); err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
