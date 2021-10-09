@@ -138,6 +138,11 @@ func (senv *ServerEnv) HandlePostCreate(writer http.ResponseWriter, req *http.Re
 
 // GET /posts/<postID>
 func (senv *ServerEnv) HandlePostGet(writer http.ResponseWriter, req *http.Request) {
+	if strings.Contains(req.URL.Path, "/users/") {
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		http.Redirect(writer, req, "/posts/users/", http.StatusSeeOther)
+		return
+	}
 	urlParts := strings.Split(req.URL.Path[1:], "/")
 	postID := strings.Join(urlParts[1:], "")
 	postObjectID, err := primitive.ObjectIDFromHex(postID)

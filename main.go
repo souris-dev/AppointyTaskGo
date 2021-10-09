@@ -43,6 +43,7 @@ func main() {
 
 	senv := &handlers.ServerEnv{DB: client.Database(dbname)}
 	mux := http.NewServeMux()
+	
 
 	mux.HandleFunc("/users", utils.MakeCheckMethodHandler("POST", senv.HandleUserCreate))
 	mux.HandleFunc("/users/", utils.MakeCheckMethodHandler("GET", senv.HandleUserGet))
