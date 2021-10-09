@@ -18,6 +18,7 @@ import (
 func main() {
 	uri := os.Getenv("MONGODB_URI")
 	dbname := os.Getenv("MONGODB_DBNAME")
+	port := os.Getenv("APPYINSTA_PORT")
 
 	if uri == "" || dbname == "" {
 		log.Fatal("You must set the MONGODB_URI and MONGODB_DBNAME environment variables.")
@@ -43,7 +44,6 @@ func main() {
 
 	senv := &handlers.ServerEnv{DB: client.Database(dbname)}
 	mux := http.NewServeMux()
-	
 
 	mux.HandleFunc("/users", utils.MakeCheckMethodHandler("POST", senv.HandleUserCreate))
 	mux.HandleFunc("/users/", utils.MakeCheckMethodHandler("GET", senv.HandleUserGet))
@@ -51,5 +51,5 @@ func main() {
 	mux.HandleFunc("/posts/", utils.MakeCheckMethodHandler("GET", senv.HandlePostGet))
 	mux.HandleFunc("/posts/users/", utils.MakeCheckMethodHandler("GET", senv.HandleUserPostsGet))
 
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), mux))
 }
