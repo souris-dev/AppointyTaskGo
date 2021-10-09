@@ -40,6 +40,7 @@ func (senv *ServerEnv) HandleUserCreate(writer http.ResponseWriter, req *http.Re
 
 	if user.Email == "" || user.PwdHash == "" || user.Name == "" {
 		http.Error(writer, "Bad Request", http.StatusBadRequest)
+		return
 	}
 
 	// hash the password of the user
@@ -81,6 +82,7 @@ func (senv *ServerEnv) HandleUserGet(writer http.ResponseWriter, req *http.Reque
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			utils.AddCommonHeaders(&writer)
 			fmt.Fprintf(writer, "{}")
 			return
 		}
@@ -111,6 +113,7 @@ func (senv *ServerEnv) HandlePostCreate(writer http.ResponseWriter, req *http.Re
 
 	if post.Caption == "" || post.ImgURL == "" || post.PostedByUID == primitive.NilObjectID {
 		http.Error(writer, "Bad Request", http.StatusBadRequest)
+		return
 	}
 
 	// set the PostedOn field of the post as per server time
@@ -140,7 +143,7 @@ func (senv *ServerEnv) HandlePostGet(writer http.ResponseWriter, req *http.Reque
 	postObjectID, err := primitive.ObjectIDFromHex(postID)
 
 	if err != nil {
-		http.Error(writer, "Bad userID", http.StatusBadRequest)
+		http.Error(writer, "Bad postID", http.StatusBadRequest)
 		return
 	}
 
@@ -151,6 +154,7 @@ func (senv *ServerEnv) HandlePostGet(writer http.ResponseWriter, req *http.Reque
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			utils.AddCommonHeaders(&writer)
 			fmt.Fprintf(writer, "{}")
 			return
 		}

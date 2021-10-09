@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,4 +29,16 @@ func openDBCon() (*ServerEnv, *mongo.Client) {
 
 	senv := &ServerEnv{DB: client.Database(dbname)}
 	return senv, client
+}
+
+func checkResponseHeaders(resp *http.Response) error {
+	ctype := resp.Header.Get("Content-Type")
+
+	if ctype == "" {
+		return fmt.Errorf("Content-Type not set.")
+	} else if ctype == "application/json; charset=utf-8" {
+		return nil
+	} else {
+		return fmt.Errorf("Content-Type found was: %s", ctype)
+	}
 }
