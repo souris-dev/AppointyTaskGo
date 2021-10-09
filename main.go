@@ -20,8 +20,8 @@ func main() {
 	dbname := os.Getenv("MONGODB_DBNAME")
 	port := os.Getenv("APPYINSTA_PORT")
 
-	if uri == "" || dbname == "" {
-		log.Fatal("You must set the MONGODB_URI and MONGODB_DBNAME environment variables.")
+	if uri == "" || dbname == "" || port == "" {
+		log.Fatal("You must set the MONGODB_URI, MONGODB_DBNAME and APPYINSTA_PORT environment variables.")
 	}
 
 	ctx, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
