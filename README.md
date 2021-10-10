@@ -221,11 +221,13 @@ json
 
 ## Running Unit Tests
 
-Go to the project root directory and run:
+Ensure that the required environment variables are set (see the "Running the API section"), and go to the project root directory and run:
 
 ```sh
 go test appyinsta/api/handlers
 ```
+
+(As of now, the tests depend on existing data in the database, and will fail if that data is not present. A mechanism to add test data will be added.)
 
 ## Licence
 
