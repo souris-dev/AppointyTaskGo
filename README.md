@@ -49,13 +49,13 @@ After this, run the executable created after building it.
 
 ### Linux
 ```sh
-./appointy
+./appyinsta
 ```
 You may have to change permissions for executing this.
 
 ### Windows (Powershell)
 ```ps
-./appointy
+./appyinsta
 ```
 
 The server will now run on the specified port (as specified in the `APPYINSTA_PORT` environment variable).
@@ -219,6 +219,13 @@ json
 </table>
 
 
+## Running Unit Tests
+
+Go to the project root directory and run:
+
+```sh
+go test appyinsta/api/handlers
+```
 
 ## Licence
 
